@@ -14,11 +14,51 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     var someArray: [String] = []
     
+    let client = APIClient()
+    
+    var semaphore = DispatchSemaphore(value: 1)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         gcdTableView.delegate = self
         gcdTableView.dataSource = self
+        
+        client.getName { (data, error) in
+            print(data!)
+            
+            self.semaphore.wait()
+
+            self.someArray.append(data!)
+
+            self.gcdTableView.reloadData()
+            
+            self.semaphore.signal()
+        }
+        
+        client.getAddress { (data, error) in
+            print(data!)
+            
+            self.semaphore.wait()
+            
+            self.someArray.append(data!)
+            
+            self.gcdTableView.reloadData()
+            
+            self.semaphore.signal()
+        }
+        
+        client.getChief { (data, error) in
+            print(data!)
+            
+            self.semaphore.wait()
+            
+            self.someArray.append(data!)
+            
+            self.gcdTableView.reloadData()
+            
+            self.semaphore.signal()
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -48,4 +88,168 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
 
 }
+
+class APIClient {
+    
+    typealias Name = (String?, Error?) -> Void
+
+    func getName(completionHandler completion: @escaping Name) {
+        
+    
+        guard let url = URL(string: "https://stations-98a59.firebaseio.com/name.json") else {return}
+    
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+    
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+        
+            DispatchQueue.main.async {
+            
+            
+                guard error == nil else {
+                
+                    completion(nil, error)
+                
+                    return
+                }
+            
+                guard let httpResponse = response as? HTTPURLResponse else {
+                
+                    completion(nil, error)
+                
+                    return
+                }
+            
+                switch httpResponse.statusCode {
+            
+                case 200...299:
+                
+                    if let returnData = String(data: data!, encoding: .utf8) {
+                    completion(returnData, nil)
+                }
+                
+                default:
+                    completion(nil, error)
+                }
+            }
+        
+        }
+        
+        task.resume()
+    }
+    
+    func getAddress(completionHandler completion: @escaping Name) {
+
+        guard let url = URL(string: "https://stations-98a59.firebaseio.com/address.json") else {return}
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+
+            DispatchQueue.main.async {
+
+
+                guard error == nil else {
+
+                    completion(nil, error)
+
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+
+                    completion(nil, error)
+
+                    return
+                }
+
+                switch httpResponse.statusCode {
+
+                case 200...299:
+
+                    if let returnData = String(data: data!, encoding: .utf8) {
+                        completion(returnData, nil)
+                    }
+
+                default:
+                    completion(nil, error)
+                }
+            }
+
+        }
+
+        task.resume()
+    }
+    
+    func getChief(completionHandler completion: @escaping Name) {
+
+        guard let url = URL(string: "https://stations-98a59.firebaseio.com/head.json") else {return}
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+
+            DispatchQueue.main.async {
+
+
+                guard error == nil else {
+
+                    completion(nil, error)
+
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+
+                    completion(nil, error)
+
+                    return
+                }
+
+                switch httpResponse.statusCode {
+
+                case 200...299:
+
+                    if let returnData = String(data: data!, encoding: .utf8) {
+                        completion(returnData, nil)
+                    }
+
+                default:
+                    completion(nil, error)
+                }
+            }
+
+        }
+
+        task.resume()
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
