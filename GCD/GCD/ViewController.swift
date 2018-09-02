@@ -24,7 +24,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         gcdTableView.delegate = self
         gcdTableView.dataSource = self
         
-        showByOrder()
+//        showByOrder()
+        
+        showAtTheSameTime()
     }
     
     func showByOrder() {
@@ -68,6 +70,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             self.semaphore.signal()
             }
         }
+    }
+    
+    func showAtTheSameTime() {
+        
+        let group = DispatchGroup()
+
+            group.enter()
+            self.client.getName { (data, error) in
+            print(data!)
+                
+            self.someArray.append(data!)
+            group.leave()
+                
+            }
+            
+            
+            group.enter()
+            self.client.getAddress { (data, error) in
+            print(data!)
+                
+            self.someArray.append(data!)
+            group.leave()
+            
+            }
+            
+            
+            group.enter()
+            self.client.getChief { (data, error) in
+            print(data!)
+                
+            self.someArray.append(data!)
+            group.leave()
+            
+            }
+            
+            group.notify(queue: DispatchQueue.main) {
+                
+                self.gcdTableView.reloadData()
+                
+            }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
