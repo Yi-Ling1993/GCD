@@ -24,40 +24,49 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         gcdTableView.delegate = self
         gcdTableView.dataSource = self
         
-        client.getName { (data, error) in
-            print(data!)
-            
-            self.semaphore.wait()
-
-            self.someArray.append(data!)
-
-            self.gcdTableView.reloadData()
-            
-            self.semaphore.signal()
-        }
+        showByOrder()
+    }
+    
+    func showByOrder() {
         
-        client.getAddress { (data, error) in
-            print(data!)
-            
-            self.semaphore.wait()
-            
-            self.someArray.append(data!)
-            
-            self.gcdTableView.reloadData()
-            
-            self.semaphore.signal()
-        }
+        let loadingQueue = DispatchQueue.global()
         
-        client.getChief { (data, error) in
-            print(data!)
+        loadingQueue.async {
             
             self.semaphore.wait()
-            
+            self.client.getName { (data, error) in
+            print(data!)
+                
             self.someArray.append(data!)
-            
+                
             self.gcdTableView.reloadData()
-            
+                
             self.semaphore.signal()
+                
+                
+            }
+            
+            self.semaphore.wait()
+            self.client.getAddress { (data, error) in
+            print(data!)
+                
+            self.someArray.append(data!)
+                
+            self.gcdTableView.reloadData()
+                
+            self.semaphore.signal()
+            }
+            
+            self.semaphore.wait()
+            self.client.getChief { (data, error) in
+            print(data!)
+                
+            self.someArray.append(data!)
+                
+            self.gcdTableView.reloadData()
+                
+            self.semaphore.signal()
+            }
         }
     }
     
